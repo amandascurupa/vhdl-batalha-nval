@@ -65,16 +65,35 @@ BEGIN
         END IF;
     END IF;
     return auxiliar;
-end salvarNavio2;
+END salvarNavio2;
 
-function processaDisparo(disparo : std_logic_vector; pos_navio1 : std_logic_vector; pos_navio2 : std_logic_vector) return std_logic is
+function processaDisparo(disparo : std_logic_vector; pos_navio1 : std_logic_vector; pos_navio2 : std_logic_vector) return std_logic IS
 BEGIN
     IF disparo(9 downto 6) = pos_navio1 or disparo(9 downto 6) = pos_navio2(3 downto 0) or disparo(9 downto 6) = pos_navio2(7 downto 4) THEN
-        return '1';
+        CASE disparo IS
+            WHEN "0000" => disparo <= "0010";
+            WHEN "0001" => disparo <= "1111";
+            WHEN "0010" => disparo <= "1011";
+            WHEN "0011" => disparo <= "0110";
+            WHEN "0100" => disparo <= "1001";
+            WHEN "0101" => disparo <= "0111";
+            WHEN "0110" => disparo <= "0101";
+            WHEN "0111" => disparo <= "1000";
+            WHEN "1000" => disparo <= "0000";
+            WHEN "1001" => disparo <= "0001";
+            WHEN "1010" => disparo <= "0100";
+            WHEN "1011" => disparo <= "0011";
+            WHEN "1100" => disparo <= "1101";
+            WHEN "1101" => disparo <= "1110";
+            WHEN "1110" => disparo <= "1010";
+            WHEN "1111" => disparo <= "1100";
+            WHEN OTHERS => NULL; 
+        END CASE;
+        return '1'; -- Acertou
+    ELSE 
+        return '0'; -- Errou
     END if;
-
-    return '0';
-end processaDisparo;
+END processaDisparo;
 
 BEGIN
     PROCESS ( CLOCK(0), entradas, ledr, ledg )
@@ -83,6 +102,7 @@ BEGIN
             ledr(0) <= '0';
             ledg(0) <= '0';
 	        estado_atual <= ini;
+            contador <= 0;
         ELSIF CLOCK(0)'EVENT AND CLOCK(0) = '1' THEN
             CASE estado_atual IS
             WHEN ini =>
@@ -105,7 +125,7 @@ BEGIN
                 estado_atual <= n2;
             WHEN jogando =>
                 contador <= contador + 1;
-                IF (processaDisparo(entradas, navio1, navio2)) THEN
+                IF (processaDisparo(entradas, navio1, navio2)) = '1' THEN
                     estado_atual <= acerto1;
                 END if;
             WHEN acerto1 =>
